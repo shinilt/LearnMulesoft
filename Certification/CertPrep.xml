@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="07d15a02-6ca4-4f18-9ce3-b1c8003f66e2" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="c75d0f29-1892-40da-9b1c-fa9517dccca5" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="7100388f-cd9b-4295-954b-f4952e6093bb" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<flow name="parent" doc:id="a1c2ef4f-7951-4d77-9160-cd4058119aeb" >
+		<http:listener doc:name="Listener" doc:id="eba4f196-faf1-4ce9-ac66-60bcccc87db7" config-ref="HTTP_Listener_config" path="/vehicles" allowedMethods="GET"/>
+		<set-payload value='#["cars" ++ "bus"]' doc:name="cars" doc:id="0f06e992-892b-4cc2-88c1-c463daa5728f" />
+		<set-variable value="model" doc:name="Set Variable" doc:id="022fd5df-858f-44fa-ae5a-89b66267a678" variableName="model"/>
+		<flow-ref doc:name="Flow Reference" doc:id="2ff3e1b2-6b87-48b2-85f6-c83dd96b52ae" name="child"/>
+	</flow>
+	<flow name="certprepFlow" doc:id="731f3881-9b66-4f1d-bd25-81c102ec15f3" >
+		<http:listener doc:name="Listener" doc:id="840f315a-47de-40cd-99bb-96fb8606b70c" config-ref="HTTP_Listener_config" path="/q3" allowedMethods="POST"/>
+		<try doc:name="Try" doc:id="54cec86b-f1ac-4d37-8c40-f6f1f02686eb" >
+			<validation:is-null doc:name="payload" doc:id="6e31e392-f4ab-462e-b468-bf5f12289d80" value="#[payload]"/>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c45d5501-245c-42bd-b56a-de8c7a759c5f" >
+					<set-payload value='"error1"' doc:name="Set Payload" doc:id="225f02d7-8f0c-41d4-86aa-82cc76ff172c" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<set-payload value='"end"' doc:name="Set Payload" doc:id="42ecd614-55e0-4df3-ade7-6fa7c0dafc1f" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="711d8c4d-6d53-4130-8dec-26c5c44429d0" >
+				<set-payload value='"error2"' doc:name="Set Payload" doc:id="b7a6d6c6-5ef4-4021-a038-2fe591c2bc93" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="child" doc:id="43449185-473b-439b-9264-4af81caec201" >
+		<logger level="INFO" doc:name="Logger" doc:id="d7be4b8e-98c2-408f-9402-401e9666140e" message="#[payload]"/>
+		<set-variable value='"1"' doc:name="Set Variable" doc:id="f501d215-5a9c-4ca7-a7bc-08dad0619b4e" variableName="1"/>
+		<set-variable value='"2"' doc:name="Set Variable" doc:id="67609948-c825-48f9-a7c5-2ccd01c6607d" variableName="2"/>
+		<set-variable value='"3"' doc:name="Set Variable" doc:id="0529a5a2-008f-46dd-b8e6-6bc3eb403ac1" variableName="3"/>
+		<logger level="INFO" doc:name="Logger" doc:id="3f83aedf-a67d-4ad8-a4e9-2ed61addedaa" message="#[payload]"/>
+	</flow>
+	<flow name="certprepFlow1" doc:id="2b52fd2c-8b58-466b-a4fc-bf57d0cddfc9" >
+		<http:listener doc:name="Listener" doc:id="d3353521-009e-41b8-8722-d3180fe77b77" config-ref="HTTP_Listener_config" path="/q7"/>
+		<file:write doc:name="Write" doc:id="d327a2a2-8f58-458f-81cb-6f060398d194" config-ref="File_Config" path="D:\mulesoft\Certification\test\11.txt" createParentDirectories="false"/>
+		<set-payload value='"written"' doc:name="Set Payload" doc:id="47f1cca3-9840-4f33-8038-dfd57c9bca4a" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="218fe231-5671-4e4c-9370-c93bd81ebd2d" type="FILE:ILLEGAL_PATH">
+				<set-payload value='"file connectivity"' doc:name="Set Payload" doc:id="5068667d-897b-42f2-824b-368d06b88e05" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="certprepFlow2" doc:id="9b7441e7-e283-4ba2-847e-ed740ae3b2bf" initialState="stopped">
+		<scheduler doc:name="Scheduler" doc:id="8498e204-7ad3-4a63-ae86-1e805e9036de" >
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="DAYS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<set-payload value="#[['a','b','c','d','e']]" doc:name="Set Payload" doc:id="d5391e86-5b4d-4b31-a651-b7e87cbbe626" />
+		<set-variable value='"mainflow"' doc:name="Set Variable" doc:id="b90168c3-8e24-4416-adb7-82554904b7d2" variableName="var1inmainflow"/>
+		<batch:job jobName="certprepBatch_Job" doc:id="bab3a0a0-1fe7-4ed0-b43f-9b981de03ecb" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="5fcaa7fd-2079-443d-b1cb-53fbf692bf14" acceptExpression='#[not (payload contains "b") ]'>
+					<ee:transform doc:name="Transform Message" doc:id="45ef7510-c2be-4de6-8792-974b1e94efd5" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+upper(payload)]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator3" doc:id="04972b53-839b-4f4e-973d-40da8dc3807c" size="3">
+						<logger level="INFO" doc:name="Logger" doc:id="c40ba28e-d2ac-4535-bc0e-8cae3f3c2b6e" message="#[output applicaion/json --- payload]"/>
+					</batch:aggregator>
+					<set-variable value='"var val in batch"' doc:name="Set Variable" doc:id="cd964553-c074-49da-82c1-4feec2ee0152" variableName="varInBatch"/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="eb13f242-0bae-444c-a7d0-422c3502d26c" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="q17" doc:id="0317d33c-bc41-45e6-a77b-115274353654" >
+		<http:listener doc:name="Listener" doc:id="3c856299-2a09-4cac-bf04-32589ddc12d1" config-ref="HTTP_Listener_config" path="/q17"/>
+		<set-payload value="#[lookupf ('addltem', { payload: { price: &quot;100&quot;, item: &quot;router&quot;, itemType: &quot;cable&quot; } } )]" doc:name="Set Payload" doc:id="b12a3200-98bc-4d78-a826-c764e5808cfe" />
+	</flow>
+	<flow name="q25" doc:id="7080ee7d-069b-419d-ab99-d2f3e5a56c6f" >
+		<http:listener doc:name="Listener" doc:id="beef8998-f4cc-482c-a5a4-8fe0e57b7c32" config-ref="HTTP_Listener_config" path="/q25"/>
+		<set-payload value='"bfr"' doc:name="Set Payload" doc:id="8ed63afb-552f-4ddf-a980-a63523b8448a" />
+		<validation:is-null doc:name="Is null" doc:id="4db38f99-457a-47a7-b0ca-878d06127941" value="#[payload]"/>
+		<set-payload value='"aftr"' doc:name="Set Payload" doc:id="72386586-c391-42c0-8e3a-590ec95c9320" />
+	</flow>
+	<flow name="addItem" doc:id="b8d840cb-aeb2-41ab-adff-f7ffa472001b" >
+		<set-payload value="#[%dw 2.0
+output applicaion/json
+---
+order:{
+	item:{
+		itemName: payload.item,
+		itemType: payload.itemType,
+		price: payload.price
+	}
+}]" doc:name="Set Payload" doc:id="58fcc660-3d57-46b2-899f-4c601a91900c" />
+	</flow>
+	<flow name="q28" doc:id="714cf633-21d8-49d7-9763-58dfdcc764d3" >
+		<http:listener doc:name="Listener" doc:id="fd23e8e6-cf8d-4b4c-bada-251c92a227e1" config-ref="HTTP_Listener_config" path="/q28"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="2241dcd5-fadd-4bea-8c24-e28ece8b9b38" >
+			<route >
+				<set-payload value='"100"' doc:name="Set Payload" doc:id="6baca302-44bb-4f54-9971-cd388567785b" />
+				<ee:transform doc:name="added 10sec sleep" doc:id="f953afcc-ca1a-4902-b8eb-a4560453e6c2" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::Runtime
+output application/json
+---
+{ "user" : 1 } wait 10000]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<set-payload value='"200"' doc:name="Set Payload" doc:id="9605fbef-3cf4-4e49-bba1-feebcbb45cd7" />
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="e6213083-11f2-40cf-b435-5ecae752a14c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="q27" doc:id="8ec2d3d6-bba1-4d95-b561-6dcca03fbc2d" >
+		<http:listener doc:name="Listener" doc:id="537c8c40-6563-467d-a1cc-9d2f25bcf070" config-ref="HTTP_Listener_config" path="/q27"/>
+		<flow-ref doc:name="Flow Reference" doc:id="251f8562-c2e0-4915-bd28-bfaa1e356cd1" name="private-q27"/>
+		<set-payload value='"main flow succes"' doc:name="Set Payload" doc:id="e49ccde7-fba6-405a-a944-b108b551e2fe" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b019b05b-5864-4d0b-a0b1-5c652a4eda76" >
+				<set-payload value='"error main flow"' doc:name="Set Payload" doc:id="44d07e4f-20db-4ffd-853c-e39d1d5bc545" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="private-q27" doc:id="f1105b99-029a-4f13-bfc0-10b2a09494b4" >
+		<validation:is-number doc:name="Is number" doc:id="ab30c7b8-29f7-43ad-b296-8be0c2ed22d9" value="#[payload]" numberType="INTEGER" message='"validn error"'/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8a751c90-7f6b-419d-bb47-5d6b8e2ec196" >
+				<set-payload value='"error pvt flow"' doc:name="Set Payload" doc:id="b275c6b5-bdcc-4080-bf58-44b6e2534720" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="q33" doc:id="93c01790-0d47-4cdb-913a-62b880a78e53" >
+		<http:listener doc:name="Listener" doc:id="8f46c45a-2c46-45f6-95da-ba6ae54c9ab3" config-ref="HTTP_Listener_config" path="/q33"/>
+		<set-payload value="#[[1,2,3,4]]" doc:name="Set Payload" doc:id="2be5670f-bfda-441b-b0d3-56cc331e6c0d" />
+		<set-variable value="#['10']" doc:name="Set Variable" doc:id="54c995a5-3960-4716-b22a-eb9036f1312e" variableName="qty"/>
+		<foreach doc:name="For Each" doc:id="394d6d67-b20c-4b16-9e7e-b9878b823396" >
+			<set-payload value='#["order " ++ payload]' doc:name="Copy_of_Set Payload" doc:id="98b8090b-76cc-4895-b2cd-950a131114fa" />
+			<set-variable value="#[vars.qty +1]" doc:name="Copy_of_Set Variable" doc:id="38fafd08-5a49-4b54-bdd7-08794063b707" variableName="qty"/>
+			<set-variable value='"forEachVarVal"' doc:name="Set Variable" doc:id="284c227a-cabb-4015-b2fa-592c450d3e2e" variableName="for-eachVar"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="7fd2617a-2d7c-4e78-a485-885c5a6a0260" message="#[[payload, vars.qty]]"/>
+	</flow>
+	<flow name="q35" doc:id="294a2f67-8265-436b-b056-501284722f34" >
+		<http:listener doc:name="Listener" doc:id="de9f0e7e-3393-48d2-84c8-b7100696d744" config-ref="HTTP_Listener_config" path="/q35"/>
+		<choice doc:name="Choice" doc:id="d665fa62-f93a-43c6-844f-6bb26a6a5ef3" >
+			<when expression="#[true]">
+				<logger level="INFO" doc:name="Logger" doc:id="026495a4-f46e-4628-89c4-9fd9382bde77" message='"1"'/>
+			</when>
+			<when expression="#[true]">
+				<logger level="INFO" doc:name="Logger" doc:id="5c4722bd-dc82-46da-bb1e-e9f756100b15" message='"2"'/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="83ea1afe-99b9-406b-abe9-6136ca155ad9" message='#["default"]'/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="q39main" doc:id="9bf30fa7-95d6-47c2-b991-bf9611007f55" >
+		<http:listener doc:name="Listener" doc:id="9aaa31e8-8697-4a88-8f51-f3fc1741a9de" config-ref="HTTP_Listener_config" path="/q39main"/>
+		<set-payload value='"order-1- set in q39 main flow"' doc:name="Set Payload" doc:id="a0954cba-a3f4-491f-a76c-71cf3326868f" />
+		<set-variable value="'var set to 1'" doc:name="Set Variable" doc:id="f5b8749f-9c27-48cd-a857-e95746e27e43" variableName="qty"/>
+		<http:request method="POST" doc:name="Request" doc:id="07557e67-8072-4a11-a27f-9c8e60c5daf4" config-ref="HTTP_Request_configuration" path="/q39child"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a21d0aea-062c-4e59-a37a-9186726fe6fc" message="#[payload]"/>
+	</flow>
+	<flow name="q39child" doc:id="7962b39b-665b-4e24-84a8-4657cb824b49" >
+		<http:listener doc:name="Listener" doc:id="f495de53-8573-4eea-88b4-664c942dace0" config-ref="HTTP_Listener_config" path="/q39child"/>
+		<set-payload value='"set in q39 chiild flow"' doc:name="Set Payload" doc:id="30029ef6-2cc6-459e-8524-ce5440546548" />
+		<logger level="INFO" doc:name="Logger" doc:id="96e6f00b-8b26-4fdc-ad1d-d3003e26d297" />
+	</flow>
+	<flow name="q41" doc:id="bb3d1bdd-5cc6-4855-b264-f0bbc3c87718" >
+		<http:listener doc:name="Listener" doc:id="1149d9de-409f-4d2c-923d-993407367557" config-ref="HTTP_Listener_config" path="/q41"/>
+		<set-payload value='"payload set here in main"' doc:name="Set Payload" doc:id="f9e9b230-64f8-4755-aecf-b983fc51d758" />
+		<set-variable value="'1'" doc:name="Set Variable" doc:id="3dfcf7a8-9e17-47d0-98c0-d7298703f4e6" variableName="qtyvar"/>
+		<flow-ref doc:name="Flow Reference" doc:id="24e83fd9-7789-4665-9d0d-1584e4d5bdd7" name="q41child"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a9857f9d-7f50-4571-ae6e-33a7073161e9" message="#[vars.qtyvar]"/>
+	</flow>
+	<flow name="q41child" doc:id="43d72dd0-95f8-4df2-91e7-9d37e22bf486" >
+		<logger level="INFO" doc:name="Logger" doc:id="f613c038-3c43-4d5c-962a-3a9a74669ee0" />
+		<set-variable value="'2'" doc:name="Set Variable" doc:id="bfa9e3ae-6d56-4629-a1c0-cd11e7f0f9f9" variableName="qtyvar"/>
+		<set-payload value='"pld set in chld flow"' doc:name="Set Payload" doc:id="fb561ec4-c6f7-4928-bdaa-be55f7cdb262" />
+	</flow>
+	<flow name="q45" doc:id="4cb0f82b-cf22-4124-939e-989ee140aa41" >
+		<http:listener doc:name="Listener" doc:id="151fc683-5ec3-407d-b0c6-21031049f101" config-ref="HTTP_Listener_config" path="/q45"/>
+		<set-payload value='#[{
+	"txn-id": "mytxnid",
+	"name": "myname"
+}]' doc:name="Set Payload" doc:id="26c8c3b5-20d7-4a79-91ea-f92b083cba1d" />
+		<ee:transform doc:name="Transform Message" doc:id="f89b8660-d564-428b-aabe-6ad8187c933b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {"write_date": now()}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="WriteFile" doc:id="48607584-8130-40a8-95f3-0784735c8458" config-ref="File_Config" path="D:\mulesoft\Certification\q45.txt"/>
+	</flow>
+	<flow name="q54" doc:id="7cabb1c7-b18e-49a1-946d-147e371d60f0" >
+		<http:listener doc:name="Listener" doc:id="fb57a966-c25c-4041-9c93-5b379b8ea453" config-ref="HTTP_Listener_config" path="/q54"/>
+		<ee:transform doc:name="Transform Message" doc:id="5b3902db-8233-49ed-bcbb-e9e2c07e76a4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+var conductorIds = [1,22]
+---
+trains:{(
+	conductorIds map ((engId, index)->
+	train:{engineerId:engId}
+)
+)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value='#[&lt;resp&gt;&lt;val1&gt;valueoonehere&lt;/val1&gt;&lt;/resp&gt;]' doc:name="Set Payload" doc:id="ec0351d9-60a7-4e63-86b3-af73d593c2e1" />
+		<ee:transform doc:name="Transform Message" doc:id="9d32c40f-8d80-40cc-ab47-eefdaa55c020" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+typeOf(payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[{'year':'2020'}]" doc:name="Set Payload" doc:id="e6989054-6123-4d65-b7fa-f86273bff883" />
+		<logger level="INFO" doc:name="Logger" doc:id="bb7d2d2d-a455-4461-8aa5-1a0ee9e52802" message='#["the year is " ++ payload.year ++ typeOf(payload)]'/>
+	</flow>
+	<flow name="q86" doc:id="ff7ec3e4-7071-4cb2-97f0-f6b6cddf83cb" >
+		<http:listener doc:name="Listener" doc:id="eaabc5a6-85ed-47b2-8d64-6bd2f17ca4ae" config-ref="HTTP_Listener_config" path="/q86"/>
+		<set-payload value='#["begin"]' doc:name="Set Payload" doc:id="a650487e-abca-43a8-8b42-cf6a60510457" />
+		<http:request method="GET" doc:name="Request" doc:id="8f4f014e-3f0f-425a-9bd5-286a5f7b3204" config-ref="HTTP_Request_configuration" path="/q88"/>
+		<set-payload value='#["end"]' doc:name="Set Payload" doc:id="ec8dfb1a-61c2-4024-acb9-1d0af72c2be0" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b0463e89-583b-4f5f-a279-66585ac1dacf" >
+				<set-payload value='#["error"]' doc:name="Set Payload" doc:id="663192c5-580d-4129-b2e3-f7c9df317b60" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="q90" doc:id="1a53d20d-5cfe-4a57-8d87-61ef09aa267f" >
+		<http:listener doc:name="Listener" doc:id="85ef2ed9-0dbe-476f-8be3-f7231e0e7b1f" config-ref="HTTP_Listener_config" path="/q90"/>
+		<validation:is-blank-string doc:name="Is blank string" doc:id="739d2e39-499a-4d8b-ad8c-97bd59485ac6" value="#[payload]"/>
+		<set-payload value='#["end"]' doc:name="Set Payload" doc:id="329bde3d-f066-4fe1-80c4-fc741e77d1c3" />
+	</flow>
+</mule>
